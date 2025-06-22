@@ -99,14 +99,14 @@ export default function Board() {
   return (
     // every component needs to return something. this is returning the board
     <>
-      <div className="status">{status}</div> // status is whos turn it is or if
-      there is a winner
+      <div className="status">{status}</div>
+      {/* status is whos turn it is or if
+      there is a winner */}
       <div className="board-row">
         {" "}
-        // aligns the squares into 3 per row
-        <Square value={squares[0]} onSquareClick={() => handleClick(0)} /> //
-        Square component that recieves props from Board component. indicating
-        which square index to change the value and onClick instructions
+        <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
+        {/* Square component that recieves props from Board component. indicating
+        which square index to change the value and onClick instructions */}
         <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
         <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
       </div>

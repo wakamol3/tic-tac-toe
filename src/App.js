@@ -25,7 +25,8 @@ function Square({ value, onSquareClick }) {
       className="square" // Shaped using the "square" className
       onClick={onSquareClick} // When clicked, changes the value of the button text
     >
-      {value} // Value is a prop
+      {/* Value is a prop */}
+      {value}
     </button>
   );
 }

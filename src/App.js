@@ -1,113 +1,43 @@
-// Summary: There are two components, Board and Square.
-// Board is made up of 9 Square components that uses usestate to store their state in an array.
-// They are assigned a className to order them into a board
-// Square displays an "X" or "O" when you click it
-//
-
 import { useState } from "react"; // import's usestate variable hook
 
-// You have a square that displays an "X" or "O" when you click it - game logic
-// Because each of them are blank square buttons at first, each square is just
-// formatted as a board, using CSS! 3 squares per row. - css
-// The Square function allows you to create multiple Square components to create the Board. - vizualize
-// Squares start off blank and you change them to either an X or an O by clicking on empties.
-// The Square component takes two props from the upper Board component, and uses them
-// to display an X or an O in the square you clicked
-
-// Take 2 props that define the value displayed in the square, an X or O,
-
-// A square Button that changes its value when you click it via props
 function Square({ value, onSquareClick }) {
-  // Square - a Button Component styld as a 2D square
   return (
-    // returns a button
     <button
-      className="square" // Shaped using the "square" className
-      onClick={onSquareClick} // When clicked, changes the value of the button text
+      className="square"
+      onClick={onSquareClick} 
     >
-      {/* Value is a prop */}
       {value}
     </button>
   );
 }
 
-// main component; export so it is globally available
-export default function Board() {
-  const [xIsNext, setXIsNext] = useState(true); // state for turns
-  const [squares, setSquares] = useState(Array(9).fill(null)); // state of board
-
-  // changes from X to O
-  // handles repetative clicks
-  // tests winner logic
-  // sets both state varibles
-  // xIsNext changes players
-  // squares stores board squares array
+function Board({ xIsNext, squares, onPlay }) {
   function handleClick(i) {
     if (squares[i] || calculateWinner(squares)) {
-      // if square[i] is true then do nothing
-      // ^ or if there is a winner do nothing
       return;
     }
     const nextSquares = squares.slice(); // creates copy of board
     if (xIsNext) {
-      // checks if it's X's turn
-      nextSquares[i] = "X"; // if true then X goes
+      nextSquares[i] = "X"; 
     } else {
-      nextSquares[i] = "O"; // if false then it is O payer turn
+      nextSquares[i] = "O";
     }
-    setSquares(nextSquares); // updates all squares with "lifting state up" logic
-    setXIsNext(!xIsNext); // updates who the next player is
+    onPlay(nextSquares);
   }
 
-  // calculates winner
-  function calculateWinner(squares) {
-    // takes all squares current states (the board)
-    const lines = [
-      // combinations of winning squares
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-      //for loop that matches the lines array with players turn - logic
-      const [a, b, c] = lines[i]; // creates 3 destructured variables
-      if (
-        // compares squares at the indexes of the lines (winning combos)
-        squares[a] && // if square at index a exists and
-        squares[a] === squares[b] && // it equals the square at index b
-        squares[a] === squares[c] // and index a value also equals the value at index c
-      ) {
-        return squares[a]; // then return the value of the index a. i.e. return X || O
-      }
-    }
-    return null; // if none of the squares are winning combo's do nothing
-  }
-
-  const winner = calculateWinner(squares); // calls calculatewinner
-  let status; // status of winner
+  const winner = calculateWinner(squares);
+  let status;
   if (winner) {
-    status = "Winner: " + winner; // prints winner
+    status = "Winner: " + winner;
   } else {
-    // if no winner
-    status = "Next player: " + (xIsNext ? "X" : "O"); // displays who's turn it is
+    status = "Next player: " + (xIsNext ? "X" : "O");
   }
 
   return (
-    // every component needs to return something. this is returning the board
     <>
       <div className="status">{status}</div>
-      {/* status is whos turn it is or if
-      there is a winner */}
       <div className="board-row">
-        {" "}
         <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-        {/* Square component that recieves props from Board component. indicating
-        which square index to change the value and onClick instructions */}
         <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
         <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
       </div>
@@ -123,4 +53,73 @@ export default function Board() {
       </div>
     </>
   );
+}
+
+// Top-level component
+export default function Game() { // is it common to put the state only at the top level component? ?????????????????????????????????
+  const [history, setHistory] = useState([Array(9).fill(null)]); // remembers history of moves. state = an array of 9 null indexes
+  const [currentMove, setCurrentMove] = useState(0);
+  const currentSquares = history[currentMove];
+  const xIsNext = currentMove % 2 === 0;
+
+  function handlePlay(nextSquares) { // what is next squares? 
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+  }
+
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+  }
+
+  const moves = history.map((squares, move) => { // what is squares and move?
+    let description;
+    if (move > 0) {
+      description = 'Go to move #' + move;
+    } else {
+      description = 'Go to game start';
+    }
+    return (
+    <li key={move}> {/* what is key?*/}
+      <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+  );
+});
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
+}
+
+function calculateWinner(squares) {
+  const lines = [
+    // combinations of winning squares
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i]; // creates 3 destructured variables
+    if (
+      // compares squares at the indexes of the lines (winning combos)
+      squares[a] && 
+      squares[a] === squares[b] && 
+      squares[a] === squares[c] 
+    ) {
+      return squares[a]; // returns X || O
+    }
+  }
+  return null;
 }
